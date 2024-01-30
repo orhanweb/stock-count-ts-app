@@ -13,7 +13,7 @@ export const countFormAPI = createApi({
     
     addCountForm: builder.mutation<{}, CountFormData>({ //success: boolean; message: string
         query: (formData) => ({
-          url: '/counts', 
+          url: '/counts',
           method: 'POST',
           body: formData,
         }), 
