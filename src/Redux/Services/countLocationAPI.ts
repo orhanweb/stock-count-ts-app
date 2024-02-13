@@ -12,6 +12,17 @@ export const countLocationAPI = createApi({
     getMarkets: builder.query<Market[], void>({
       query: () => `/magazalar`,
     }),
+    getMarket: builder.query<Market, { countID: string }>({
+      query: (args) => {
+        const formData = new FormData();
+        formData.append('areaid', args.countID);
+        return {
+          url: '/alanlar',
+          method: 'POST',
+          body: formData,
+        };
+      },
+    }),
     getCorridors: builder.query<Corridor[], { marketId: number }>({
       query: (args) => {
         const formData = new FormData();
@@ -39,6 +50,7 @@ export const countLocationAPI = createApi({
 
 export const {
   useGetMarketsQuery,
+  useGetMarketQuery,
   useGetCorridorsQuery,
   useGetSectionAndLevelQuery,
 } = countLocationAPI;
