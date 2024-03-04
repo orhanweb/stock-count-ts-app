@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Market, Corridor, SectionAndLevel } from '../Models/apiTypes';
+import { StructureToCount, Corridor, SectionAndLevel, CountVariant, CountType, CountArea } from '../Models/apiTypes';
 
 const BASE_URL = "https://services.ephesus.marketing/depo";
 
@@ -8,11 +8,31 @@ const BASE_URL = "https://services.ephesus.marketing/depo";
 export const countLocationAPI = createApi({
   reducerPath: "countLocationAPI",
   baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
+  tagTypes: ['Variants', 'CountType','Areas'], // Tag türlerini tanımla
+
   endpoints: (builder) => ({
-    getMarkets: builder.query<Market[], void>({
-      query: () => `/magazalar`,
+
+    getStructuresToCount: builder.query<StructureToCount[], void>({
+      query: () => `/depolar`,
     }),
-    getMarket: builder.query<Market, { countID: string }>({
+
+    getCountVariants: builder.query<CountVariant[], void>({
+      query: () => `/sayimTuru`,
+      providesTags: ['Variants'], // Bu sorgu sonucunu Variants tag'i ile ilişkilendir
+    }),
+
+    getCountType: builder.query<CountType[], {variant:number}>({
+      query: ({variant}) => `/sayimTipi?id=${variant}`,
+      providesTags: ['CountType'], // Bu sorgu sonucunu CountType tag'i ile ilişkilendir
+    }),
+
+    getCountArea: builder.query<CountArea[], void>({
+      query: () => `/sayimAlani`,
+      providesTags: ['Areas'],
+    }),
+
+
+    getStructure: builder.query<StructureToCount, { countID: string }>({
       query: (args) => {
         const formData = new FormData();
         formData.append('areaid', args.countID);
@@ -23,10 +43,11 @@ export const countLocationAPI = createApi({
         };
       },
     }),
-    getCorridors: builder.query<Corridor[], { marketId: number }>({
+
+    getCorridors: builder.query<Corridor[], { structureID: number }>({
       query: (args) => {
         const formData = new FormData();
-        formData.append('areaid', args.marketId.toString());
+        formData.append('areaid', args.structureID.toString());
         return {
           url: '/alanlar',
           method: 'POST',
@@ -34,6 +55,7 @@ export const countLocationAPI = createApi({
         };
       },
     }),
+
     getSectionAndLevel: builder.query<SectionAndLevel[], { zoneId: number }>({
       query: (args) => {
         const formData = new FormData();
@@ -45,12 +67,16 @@ export const countLocationAPI = createApi({
         };
       },
     }),
+    
   }),
 });
 
 export const {
-  useGetMarketsQuery,
-  useGetMarketQuery,
+  useGetStructuresToCountQuery,
+  useGetCountVariantsQuery,
+  useGetCountTypeQuery,
+  useGetCountAreaQuery,
+  useGetStructureQuery,
   useGetCorridorsQuery,
   useGetSectionAndLevelQuery,
 } = countLocationAPI;
