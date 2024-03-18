@@ -12,31 +12,78 @@ export const countFormAPI = createApi({
   tagTypes: ['Variants', 'CountType','Areas','CountList'], // Tag türlerini tanımla
   endpoints: (builder) => ({
 
+    // --- To get all counts 
     getCountList: builder.query<CountList[], void>({
       query: () => `/countList`,
       providesTags: ['CountList'],
     }),
 
+    // --- To get structures (warehouses markets and more)
     getStructuresToCount: builder.query<StructureToCount[], void>({
       query: () => `/depolar`,
     }),
 
+    // --- To get count variants
     getCountVariants: builder.query<CountVariant[], void>({
       query: () => `/sayimTuru`,
       providesTags: ['Variants'], 
     }),
 
+    // --- To get count types
     getCountType: builder.query<CountType[], {variant:number}>({
       query: ({variant}) => `/sayimTipi?id=${variant}`,
       providesTags: ['CountType'], 
     }),
 
+    // --- To get count areas
     getCountArea: builder.query<CountArea[], void>({
       query: () => `/sayimAlani`,
       providesTags: ['Areas'],
     }),
 
-    addCountForm: builder.mutation<{}, CountFormData>({ 
+    // --- To start a count
+    startCount: builder.mutation<void, { countId: number }>({
+      query: ({ countId }) => ({
+        url: `/startCount/${countId}`, // Değiştirmeyi unutma
+        method: 'POST', // PUT veya PATCH
+      }),
+      invalidatesTags: ['CountList'],
+    }),
+
+    // --- To end a count
+    endCount: builder.mutation<void, { countId: number }>({
+      query: ({ countId }) => ({
+        url: `/endCount/${countId}`, // Değiştirmeyi unutma
+        method: 'POST', // PUT veya PATCH
+      }),
+      invalidatesTags: ['CountList'],
+    }),
+
+    // --- To "delete" (lock) a count
+    lockCount: builder.mutation<void, { countId: number }>({
+      query: ({ countId }) => ({
+        url: `/lockCount/${countId}`, // Bu sayımı "silme" (kilitlenme) işlemi için kullanılacak. URl i değiştir sonra
+        method: 'POST', // PUT veya PATCH
+      }),
+      invalidatesTags: ['CountList'],
+    }),
+
+    // --- To update count dates
+    updateCountDates: builder.mutation<void, { countId: number; startDate?: string; endDate?: string }>({
+      query: ({ countId, startDate, endDate }) => ({
+        url: `/updateCountDates/${countId}`,
+        method: 'POST',
+        body: JSON.stringify({
+          ...(startDate ? { baslangic: startDate } : {}), // Eğer başlangıç tarihi varsa gönder
+          ...(endDate ? { bitis: endDate } : {}), // Eğer bitiş tarihi varsa gönder
+        }),
+       
+      }),
+      invalidatesTags: ['CountList'],
+    }),
+
+    // --- To add a new count
+    addCountForm: builder.mutation<void, CountFormData>({ 
       query: (formData) => ({
         url: '/save',
         method: 'POST',
@@ -47,4 +94,15 @@ export const countFormAPI = createApi({
   }),
 });
 
-export const {useGetCountListQuery, useGetStructuresToCountQuery, useGetCountVariantsQuery, useGetCountTypeQuery, useGetCountAreaQuery, useAddCountFormMutation } = countFormAPI;
+export const {
+  useGetCountListQuery,
+  useGetStructuresToCountQuery,
+  useGetCountVariantsQuery,
+  useGetCountTypeQuery,
+  useGetCountAreaQuery,
+  useAddCountFormMutation,
+  useStartCountMutation,
+  useEndCountMutation,
+  useLockCountMutation,
+  useUpdateCountDatesMutation
+} = countFormAPI;
